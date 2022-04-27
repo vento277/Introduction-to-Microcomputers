@@ -1,0 +1,15 @@
+{G:/UBC/Engineering/cpen211/Lab3/QT gate/lab3_top.vo} {1 {vlog -work work -stats=none {G:/UBC/Engineering/cpen211/Lab3/QT gate/lab3_top.vo}
+Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+-- Compiling module lab3_top
+
+Top level modules:
+	lab3_top
+
+} {} {}} G:/UBC/Engineering/cpen211/Lab3/lab3_top_tb_vo.v {1 {vlog -work work -stats=none G:/UBC/Engineering/cpen211/Lab3/lab3_top_tb_vo.v
+Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+-- Compiling module lab3_top_tb
+
+Top level modules:
+	lab3_top_tb
+
+} {} {}}

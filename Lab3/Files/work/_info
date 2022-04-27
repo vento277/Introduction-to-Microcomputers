@@ -1,0 +1,52 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+dE:/CPEN211 Labs
+vlab3_top
+!s110 1635479787
+!i10b 1
+!s100 5RWHVjRgeIm@V^^0cWH<h2
+I0_D:8<U2iSfl_2<1zH@912
+Z0 VDg1SIo80bB@j0V0VzS_@n1
+Z1 dG:/UBC/Engineering/cpen211/Lab3
+w1635465858
+8G:/UBC/Engineering/cpen211/Lab3/lab3_top.v
+FG:/UBC/Engineering/cpen211/Lab3/lab3_top.v
+L0 1
+Z2 OV;L;10.5b;63
+r1
+!s85 0
+31
+!s108 1635479786.000000
+!s107 G:/UBC/Engineering/cpen211/Lab3/lab3_top.v|
+!s90 -reportprogress|300|-work|work|-stats=none|G:/UBC/Engineering/cpen211/Lab3/lab3_top.v|
+!i113 1
+Z3 o-work work
+Z4 tCvgOpt 0
+vlab3_top_tb
+!s110 1635479784
+!i10b 1
+!s100 N51O8<D<JI47D[0c=?J^90
+I8I6VFIXDKUBjP]g;Wll^A1
+R0
+R1
+w1635468792
+8G:/UBC/Engineering/cpen211/Lab3/lab3_top_tb.v
+FG:/UBC/Engineering/cpen211/Lab3/lab3_top_tb.v
+L0 1
+R2
+r1
+!s85 0
+31
+!s108 1635479784.000000
+!s107 G:/UBC/Engineering/cpen211/Lab3/lab3_top_tb.v|
+!s90 -reportprogress|300|-work|work|-stats=none|G:/UBC/Engineering/cpen211/Lab3/lab3_top_tb.v|
+!i113 1
+R3
+R4
