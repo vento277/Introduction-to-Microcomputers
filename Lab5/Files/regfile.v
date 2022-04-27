@@ -1,0 +1,115 @@
+module regfile(data_in, writenum, write, readnum, clk, data_out);
+  input [15:0] data_in;
+  input [2:0] writenum, readnum;
+  input write, clk;
+  output [15:0] data_out;
+  
+  reg[15:0] R0, R1, R2, R3, R4, R5, R6, R7;
+
+  wire [15:0] load;
+  wire [7:0] one_hot_out;
+  wire [15:0] Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7;
+
+  // Decode 3-bit input of according register. 
+  Decoder decoder(writenum, one_hot_out);
+
+  // Determine which resister the one_hot_out is going to output. 
+  assign load = {8{write}} & one_hot_out;
+
+  vDFF_L #(16) R0_out(clk, load[0], data_in, Q0);
+  vDFF_L #(16) R1_out(clk, load[1], data_in, Q1);
+  vDFF_L #(16) R2_out(clk, load[2], data_in, Q2);
+  vDFF_L #(16) R3_out(clk, load[3], data_in, Q3);
+  vDFF_L #(16) R4_out(clk, load[4], data_in, Q4);
+  vDFF_L #(16) R5_out(clk, load[5], data_in, Q5);
+  vDFF_L #(16) R6_out(clk, load[6], data_in, Q6);
+  vDFF_L #(16) R7_out(clk, load[7], data_in, Q7);
+
+  // Mux at the end. Read from accoding resistor. 
+  MUX_D read(Q0, Q1, Q2, Q3, Q4, Q5, Q6, Q7, readnum, data_out);
+endmodule
+
+
+// 3:8 Decoder
+module Decoder(a, b);
+  input [2:0]a;
+  output [7:0]b;
+
+  
+  wire [7:0] b = 1 << a;
+endmodule
+
+
+//DFF for R0~R7 with clk and load.
+module vDFF_L(clk,load, D, Q);
+  parameter n=16;
+  input clk, load;
+  input [n-1:0] D;
+  output [n-1:0] Q;
+  reg [n-1:0] Q;
+  wire [n-1:0] load_out;
+
+  // if load is 1, next output = input.
+  assign load_out = load ? D : Q;
+
+  // Change output when posedge clk
+  always @(posedge clk)
+    Q = load_out;
+endmodule 
+
+
+//Multiplexer with decoder
+module MUX_D(in0, in1, in2, in3, in4, in5, in6, in7, in_b, out);
+  input [15:0] in0, in1, in2, in3, in4, in5, in6, in7;
+  input [2:0] in_b;
+  output [15:0] out;
+
+  reg[15:0] out;
+  wire[7:0] out_b;
+
+  // Decoder
+  Decoder decoder(in_b, out_b);
+
+  // Which to output.
+  always@(*) begin
+    casex(out_b)
+	8'b00000001 : out = in0;
+	8'b00000010 : out = in1;
+	8'b00000100 : out = in2;
+	8'b00001000 : out = in3;
+	8'b00010000 : out = in4;
+	8'b00100000 : out = in5;
+	8'b01000000 : out = in6;
+	8'b10000000 : out = in7;
+	default out = 16'b0;
+    endcase
+  end
+endmodule 
+
+
+
+  
+   
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

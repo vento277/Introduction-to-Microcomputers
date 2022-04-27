@@ -1,0 +1,160 @@
+module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
+  `define MWRITE 2'b01
+  `define MREAD 2'b10
+  `define MNONE 2'b00
+
+  input [3:0] KEY;
+  input [9:0] SW;
+  output [9:0] LEDR; 
+  output [6:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5;
+
+  // Lab 7
+  wire[15:0] dout, din, write_data, read_data;
+  wire [8:0] mem_addr, PC;
+  wire [7:0] read_address = mem_addr[7:0];
+  wire [7:0] write_address = mem_addr[7:0];
+  wire [7:0] next_LED;
+  wire [4:0] state;
+  wire [1:0] mem_cmd;
+  wire wout, rout, msel, write, tri_out, tri_load; 				
+ 	
+  // Ensure correct posedge is used.	
+  wire clk = ~KEY[0];
+  wire reset = ~KEY[1];
+
+  wire [15:0] out;
+  wire [2:0] switch_control;
+  cpu CPU(clk, reset, read_data, write_data, N, V, Z, w, mem_addr, mem_cmd, PC, state);
+
+  // RAM instanciation
+  RAM MEM(clk, read_address, write_address, write, din, dout);
+
+  Comp #(2) MW(2'b01, mem_cmd, weq); 		// write comparator
+  Comp #(2) MR(2'b10, mem_cmd, req); 		// read(tri-state) comparator
+  Comp #(1) MS(1'b0, mem_addr[8], msel); 	// 1'b0(tri-state) comparator
+
+  assign tri_out = (mem_cmd==`MREAD) && (mem_addr[8]==1'b0); 	// AND gate for read -> dout
+  assign read_data = tri_out? dout : 16'bz; 			// Tri-state
+  assign write = (mem_cmd==`MWRITE) && (mem_addr[8]==0); 	// AND gate for write -> RAM
+
+ // Switch
+  assign tri_load = ((mem_cmd==`MREAD)&&(mem_addr==9'h140)); 	// 'design this circuit', loads tri-state.
+  assign read_data[7:0] = tri_load? SW[7:0] : {8{1'bz}}; 	// Tri-state
+
+  // LED
+  assign LEDR[7:0] = next_LED;					
+  vDFFE #(8) loadLED(clk, load, write_data[7:0], next_LED); 	// Load reg in diagram
+  assign load_LED = ((mem_cmd==`MWRITE) && (mem_addr==9'h100)); 	// 'design this circuit', load reg.
+  
+  
+  // Add bindings for LEDR[9] - LEDR [9] is on whenever in wait stage
+  assign LEDR[9] = w;
+ 
+  // HEX display
+  assign out = write_data; 	// HEX display write_data
+  reg[6:0] HEX5;
+  
+  sseg H0(out[3:0],   HEX0);  
+  sseg H1(out[7:4],   HEX1);
+  sseg H2(out[11:8],  HEX2);
+  sseg H3(out[15:12], HEX3);
+  assign HEX4=7'b1111111;
+
+
+  // Display state in HEX5.
+  always @(*) begin
+      case(state)
+	5'b00000: HEX5 = 7'b1000000;
+	5'b01010: HEX5 = 7'b1111001;
+	5'b01111: HEX5 = 7'b0100100;
+	5'b11111: HEX5 = 7'b0110000;
+	5'b11110: HEX5 = 7'b0011001;
+	5'b10110: HEX5 = 7'b0010010;
+	5'b01011: HEX5 = 7'b0000011;
+	5'b00101: HEX5 = 7'b1111000;
+	5'b00011: HEX5 = 7'b0000000;
+	5'b01001: HEX5 = 7'b0011000;
+	default: HEX5 = 7'b1111111;
+	endcase
+  end
+endmodule
+
+
+module input_iface(clk, SW, ir, LEDR);
+  input clk;
+  input [9:0] SW;
+  output [15:0] ir;
+  output [7:0] LEDR;
+  wire sel_sw = SW[9];  
+  wire [15:0] ir_next = sel_sw ? {SW[7:0],ir[7:0]} : {ir[15:8],SW[7:0]};
+  vDFF #(16) REG(clk,ir_next,ir);
+  assign LEDR = sel_sw ? ir[7:0] : ir[15:8];  
+endmodule    
+
+// Memory, SS11
+module RAM(clk, read_address, write_address, write, din, dout);
+  parameter data_width = 16;
+  parameter addr_width = 8;
+  parameter filename = "data.txt";
+
+  input     clk, write;
+  input     [7:0] read_address, write_address;
+  input     [15:0] din;
+  output    [15:0] dout;
+  reg       [15:0] dout;
+
+  reg       [15:0] mem [2**7:0];
+
+  initial $readmemb(filename, mem);
+
+  always @ (posedge clk) begin
+    if (write)
+      mem[write_address] <= din;
+    dout <= mem[read_address]; 
+  end
+endmodule
+
+
+// Comparator, SS8
+module Comp(a, b, eq) ;
+  parameter k=8;
+  input     [k-1:0] a,b;
+  output    eq;
+  wire      eq;
+
+  assign eq = (a==b) ;
+endmodule
+
+
+// Hex 
+module sseg(in,segs);
+  input [3:0] in;
+  output reg [6:0] segs;
+
+  always@(*) begin
+    case(in)
+     	4'b0000 : segs = 7'b1000000;
+	4'b0001 : segs = 7'b1111001;
+	4'b0010 : segs = 7'b0100100;
+	4'b0011 : segs = 7'b0110000;
+	4'b0100 : segs = 7'b0011001;
+	4'b0101 : segs = 7'b0010010;
+	4'b0110 : segs = 7'b0000011;
+	4'b0111 : segs = 7'b1111000;
+	4'b1000 : segs = 7'b0000000;
+	4'b1001 : segs = 7'b0011000;
+	4'b1010 : segs = 7'b0001000;
+	4'b1011 : segs = 7'b0000011;
+	4'b1100 : segs = 7'b1000110;
+	4'b1101 : segs = 7'b0100001;
+	4'b1110 : segs = 7'b0000110;
+	4'b1111 : segs = 7'b0001110;
+   default: segs = 7'b1000000; //displays nothing
+    endcase
+  end
+endmodule
+
+
+
+
+

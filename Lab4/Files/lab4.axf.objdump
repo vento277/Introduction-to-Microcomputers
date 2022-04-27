@@ -1,0 +1,471 @@
+
+G:/UBC/Engineering/Year2/cpen211/Lab4/lab4.axf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <__cs3_interrupt_vector>:
+//R13 -> reversed num calls
+//R14 -> link register
+
+
+binary_search:
+	MOV R11, #0						// Start
+   0:	e3a0b000 	mov	r11, #0
+	SUB R3, R2, #1					// End index
+   4:	e2423001 	sub	r3, r2, #1
+	MOV R4, R3, LSR #1				// middle_index
+   8:	e1a040a3 	lsr	r4, r3, #1
+	MOV R6, #-1						// key_index
+   c:	e3e06000 	mvn	r6, #0
+	MOV R8, #1						// NumCalls
+  10:	e3a08001 	mov	r8, #1
+
+00000014 <Loop>:
+	
+Loop:
+	cmp R6, #-1						// start of the while loop: while (k == -1) 		
+  14:	e3760001 	cmn	r6, #1
+	BNE Return
+  18:	1a000020 	bne	a0 <Return>
+	
+	cmp R11, R3						// first if statement: if (s > e)
+  1c:	e15b0003 	cmp	r11, r3
+	BLE IF
+  20:	da000000 	ble	28 <IF>
+	B Return
+  24:	ea00001d 	b	a0 <Return>
+
+00000028 <IF>:
+
+	
+	IF:
+		LDR R5, [R0, R4, LSL #2]	// initialize numbers[middle_index]
+  28:	e7905104 	ldr	r5, [r0, r4, lsl #2]
+		cmp R5, R7
+  2c:	e1550007 	cmp	r5, r7
+		BNE ELSE_IF					// first else_if statement else if (numbers[middle_index] == key)
+  30:	1a000004 	bne	48 <ELSE_IF>
+
+		MOV R6, R4					// update key index
+  34:	e1a06004 	mov	r6, r4
+		
+		MVN R13, R8					// reverse R8
+  38:	e1e0d008 	mvn	sp, r8
+		ADD R13, R13, #1			// adjust R13 value to match -1 continuum
+  3c:	e28dd001 	add	sp, sp, #1
+		STR R13, [R0, R4, LSL #2]	// store R13 into numbers[middle_index]
+  40:	e780d104 	str	sp, [r0, r4, lsl #2]
+		
+		B L							// code after else statement
+  44:	ea000012 	b	94 <L>
+
+00000048 <ELSE_IF>:
+
+		
+	ELSE_IF:
+		LDR R5, [R0, R4, LSL #2]
+  48:	e7905104 	ldr	r5, [r0, r4, lsl #2]
+		cmp R5, R7
+  4c:	e1550007 	cmp	r5, r7
+		BLE ELSE					// second else_if statement else if (numbers[middle_index] > key)
+  50:	da000007 	ble	74 <ELSE>
+			
+		SUB R4, R4, #1				
+  54:	e2444001 	sub	r4, r4, #1
+		MOV R3, R4					// update end index
+  58:	e1a03004 	mov	r3, r4
+		
+		ADD R12, R4, #1				// adjust R12 value to match the index
+  5c:	e284c001 	add	r12, r4, #1
+		MVN R13, R8					// ^
+  60:	e1e0d008 	mvn	sp, r8
+		ADD R13, R13, #1
+  64:	e28dd001 	add	sp, sp, #1
+		STR R13, [R0, R12, LSL #2]
+  68:	e780d10c 	str	sp, [r0, r12, lsl #2]
+
+		ADD R8, R8, #1				// increment R8
+  6c:	e2888001 	add	r8, r8, #1
+
+		B L							// ^
+  70:	ea000007 	b	94 <L>
+
+00000074 <ELSE>:
+
+
+	ELSE:
+		ADD R4, R4, #1				
+  74:	e2844001 	add	r4, r4, #1
+		MOV R11, R4					// update start index
+  78:	e1a0b004 	mov	r11, r4
+
+		SUB R12, R4, #1				// ^
+  7c:	e244c001 	sub	r12, r4, #1
+		MVN R13, R8
+  80:	e1e0d008 	mvn	sp, r8
+		ADD R13, R13, #1
+  84:	e28dd001 	add	sp, sp, #1
+		STR R13, [R0, R12, LSL #2]
+  88:	e780d10c 	str	sp, [r0, r12, lsl #2]
+
+		ADD R8, R8, #1				// ^
+  8c:	e2888001 	add	r8, r8, #1
+
+		B L							// ^
+  90:	eaffffff 	b	94 <L>
+
+00000094 <L>:
+
+
+	L:	
+		SUB R10, R3, R11			
+  94:	e043a00b 	sub	r10, r3, r11
+		ADD R4, R11, R10, LSR #1	// update middle_index = s + (e-s)/2
+  98:	e08b40aa 	add	r4, r11, r10, lsr #1
+
+		B Loop						// continue while loop if not satisfied 
+  9c:	eaffffdc 	b	14 <Loop>
+
+000000a0 <Return>:
+		
+Return:	
+
+	MOV R0, R6						// return R0
+  a0:	e1a00006 	mov	r0, r6
+	MOV PC, LR						// return to function
+  a4:	e1a0f00e 	mov	pc, lr
+
+000000a8 <_start>:
+
+.include "address_map_arm.s"
+.text
+.globl _start
+_start:
+      ldr r4,=SW_BASE
+  a8:	e59f43ac 	ldr	r4, [pc, #940]	; 45c <numbers+0x190>
+      ldr r5,=KEY_BASE 
+  ac:	e59f53ac 	ldr	r5, [pc, #940]	; 460 <numbers+0x194>
+      ldr r6,=LEDR_BASE
+  b0:	e59f63ac 	ldr	r6, [pc, #940]	; 464 <numbers+0x198>
+
+000000b4 <wait_key3>:
+
+      // enter the value of "key" on SW0-SW9 here, then press KEY3
+wait_key3:
+      ldr r7,[r4]         // Read SW0-SW9 into R7
+  b4:	e5947000 	ldr	r7, [r4]
+
+      str r7,[r6]         // Show SW0-SW9 value on LEDR0-LEDR9
+  b8:	e5867000 	str	r7, [r6]
+      // triggers a ``Data Abort'' exception, which in turn 
+      // causes the Cortex-A9 to set the PC to 0x00000010.  
+      // Debug tip: Check you write -numData to the right 
+      // address in memory.
+
+      ldr r9,[r5]         // Read KEY0-KEY3 into R9 
+  bc:	e5959000 	ldr	r9, [r5]
+
+      ands r9,r9,#8       // Is KEY3 pressed?
+  c0:	e2199008 	ands	r9, r9, #8
+      // to indicate R9 is not zero.  
+      //
+      // If KEY3 is NOT pressed ands r9,r9,#8 sets Z flag to 1 
+      // to indicate R9 is zero.
+
+      beq wait_key3       // Branch if Z=1 (KEY3 was NOT pressed)
+  c4:	0afffffa 	beq	b4 <wait_key3>
+
+      // initialize numbers array by copying array "data" to "numbers"
+      ldr r0, =data
+  c8:	e59f0398 	ldr	r0, [pc, #920]	; 468 <numbers+0x19c>
+      ldr r1, =numbers
+  cc:	e59f1398 	ldr	r1, [pc, #920]	; 46c <numbers+0x1a0>
+      mov r2,#100
+  d0:	e3a02064 	mov	r2, #100	; 0x64
+      add r2,r0, r2, LSL #2
+  d4:	e0802102 	add	r2, r0, r2, lsl #2
+      bl  init_numbers
+  d8:	eb000011 	bl	124 <init_numbers>
+
+      ldr r0, =numbers    // 1st argument in R0 = numbers
+  dc:	e59f0388 	ldr	r0, [pc, #904]	; 46c <numbers+0x1a0>
+      mov r1,r7           // 2nd argument in R1 = key
+  e0:	e1a01007 	mov	r1, r7
+      mov r2,#100         // 3rd argument in R2 = length
+  e4:	e3a02064 	mov	r2, #100	; 0x64
+
+      // caller saving registers here because we are not expecting student submissions to respect ARM calling convensions
+      push {r4-r12,r14}       // save to stack
+  e8:	e92d5ff0 	push	{r4, r5, r6, r7, r8, r9, r10, r11, r12, lr}
+      ldr r3,=mystackptr  // 
+  ec:	e59f337c 	ldr	r3, [pc, #892]	; 470 <numbers+0x1a4>
+      str sp,[r3]         // saving value of stack pointer to mystackptr 
+  f0:	e583d000 	str	sp, [r3]
+
+      bl  binary_search   // call binary_search    
+  f4:	ebffffc1 	bl	0 <__cs3_interrupt_vector>
+
+      // caller restoring registers, starting with stack pointer which might have been clobbered
+      ldr r3, =mystackptr
+  f8:	e59f3370 	ldr	r3, [pc, #880]	; 470 <numbers+0x1a4>
+      ldr sp,[r3]
+  fc:	e593d000 	ldr	sp, [r3]
+      pop  {r4-r12,r14}
+ 100:	e8bd5ff0 	pop	{r4, r5, r6, r7, r8, r9, r10, r11, r12, lr}
+
+      // setting r4, r5, r6 back to non-garbage values
+      ldr r4,=SW_BASE
+ 104:	e59f4350 	ldr	r4, [pc, #848]	; 45c <numbers+0x190>
+      ldr r5,=KEY_BASE 
+ 108:	e59f5350 	ldr	r5, [pc, #848]	; 460 <numbers+0x194>
+      ldr r6,=LEDR_BASE
+ 10c:	e59f6350 	ldr	r6, [pc, #848]	; 464 <numbers+0x198>
+
+      str r0,[r6]         // display result on LEDR0-LEDR9 (check your result!)
+ 110:	e5860000 	str	r0, [r6]
+
+00000114 <wait_key0>:
+      // format" then "Decimal".  Repeat and in the last step select "Signed 
+      // representation".  If endIndex was 99, you should see something like 
+      // Figure 6 in the Lab 9 handout.
+
+wait_key0:                
+      ldr  r1,[r5]        // read KEY0-KEY3
+ 114:	e5951000 	ldr	r1, [r5]
+      ands r1,r1,#1       // check if KEY0 pressed
+ 118:	e2111001 	ands	r1, r1, #1
+      beq  wait_key0      // wait for KEY0 to be pressed
+ 11c:	0afffffc 	beq	114 <wait_key0>
+
+      b wait_key3         // go back and try another search
+ 120:	eaffffe3 	b	b4 <wait_key3>
+
+00000124 <init_numbers>:
+
+// "init_numbers" copies array pointed at by r0 into array pointed at by r1
+// The following code is NOT recursive.  It contains a loop.
+init_numbers:
+      ldr r3, [r0], #4
+ 124:	e4903004 	ldr	r3, [r0], #4
+      str r3, [r1], #4
+ 128:	e4813004 	str	r3, [r1], #4
+      cmp r0, r2
+ 12c:	e1500002 	cmp	r0, r2
+      blt init_numbers
+ 130:	bafffffb 	blt	124 <init_numbers>
+      mov pc, lr
+ 134:	e1a0f00e 	mov	pc, lr
+
+00000138 <mystackptr>:
+ 138:	00000000 	.word	0x00000000
+
+0000013c <data>:
+ 13c:	0000001c 	.word	0x0000001c
+ 140:	00000025 	.word	0x00000025
+ 144:	0000002c 	.word	0x0000002c
+ 148:	0000003c 	.word	0x0000003c
+ 14c:	00000055 	.word	0x00000055
+ 150:	00000063 	.word	0x00000063
+ 154:	00000079 	.word	0x00000079
+ 158:	0000007f 	.word	0x0000007f
+ 15c:	00000081 	.word	0x00000081
+ 160:	0000008a 	.word	0x0000008a
+ 164:	0000008f 	.word	0x0000008f
+ 168:	0000009b 	.word	0x0000009b
+ 16c:	000000a2 	.word	0x000000a2
+ 170:	000000a4 	.word	0x000000a4
+ 174:	000000af 	.word	0x000000af
+ 178:	000000b3 	.word	0x000000b3
+ 17c:	000000cd 	.word	0x000000cd
+ 180:	000000d4 	.word	0x000000d4
+ 184:	000000d9 	.word	0x000000d9
+ 188:	000000e7 	.word	0x000000e7
+ 18c:	000000eb 	.word	0x000000eb
+ 190:	000000ee 	.word	0x000000ee
+ 194:	000000f2 	.word	0x000000f2
+ 198:	000000f8 	.word	0x000000f8
+ 19c:	000000fa 	.word	0x000000fa
+ 1a0:	00000102 	.word	0x00000102
+ 1a4:	0000011b 	.word	0x0000011b
+ 1a8:	0000011e 	.word	0x0000011e
+ 1ac:	00000131 	.word	0x00000131
+ 1b0:	00000137 	.word	0x00000137
+ 1b4:	0000013c 	.word	0x0000013c
+ 1b8:	00000142 	.word	0x00000142
+ 1bc:	00000146 	.word	0x00000146
+ 1c0:	0000015f 	.word	0x0000015f
+ 1c4:	00000163 	.word	0x00000163
+ 1c8:	0000016c 	.word	0x0000016c
+ 1cc:	0000016e 	.word	0x0000016e
+ 1d0:	00000178 	.word	0x00000178
+ 1d4:	00000187 	.word	0x00000187
+ 1d8:	0000018e 	.word	0x0000018e
+ 1dc:	00000198 	.word	0x00000198
+ 1e0:	0000019a 	.word	0x0000019a
+ 1e4:	0000019f 	.word	0x0000019f
+ 1e8:	000001a2 	.word	0x000001a2
+ 1ec:	000001a9 	.word	0x000001a9
+ 1f0:	000001b5 	.word	0x000001b5
+ 1f4:	000001b9 	.word	0x000001b9
+ 1f8:	000001c4 	.word	0x000001c4
+ 1fc:	000001da 	.word	0x000001da
+ 200:	000001e8 	.word	0x000001e8
+ 204:	000001fa 	.word	0x000001fa
+ 208:	000001fb 	.word	0x000001fb
+ 20c:	0000020e 	.word	0x0000020e
+ 210:	00000214 	.word	0x00000214
+ 214:	00000216 	.word	0x00000216
+ 218:	00000223 	.word	0x00000223
+ 21c:	00000224 	.word	0x00000224
+ 220:	00000247 	.word	0x00000247
+ 224:	00000249 	.word	0x00000249
+ 228:	00000253 	.word	0x00000253
+ 22c:	0000025b 	.word	0x0000025b
+ 230:	0000026d 	.word	0x0000026d
+ 234:	00000280 	.word	0x00000280
+ 238:	00000295 	.word	0x00000295
+ 23c:	0000029a 	.word	0x0000029a
+ 240:	000002b2 	.word	0x000002b2
+ 244:	000002b4 	.word	0x000002b4
+ 248:	000002c9 	.word	0x000002c9
+ 24c:	000002cf 	.word	0x000002cf
+ 250:	000002ee 	.word	0x000002ee
+ 254:	000002f3 	.word	0x000002f3
+ 258:	00000300 	.word	0x00000300
+ 25c:	00000307 	.word	0x00000307
+ 260:	00000308 	.word	0x00000308
+ 264:	00000310 	.word	0x00000310
+ 268:	00000311 	.word	0x00000311
+ 26c:	00000317 	.word	0x00000317
+ 270:	0000031d 	.word	0x0000031d
+ 274:	0000031e 	.word	0x0000031e
+ 278:	00000324 	.word	0x00000324
+ 27c:	0000033c 	.word	0x0000033c
+ 280:	0000034a 	.word	0x0000034a
+ 284:	0000034e 	.word	0x0000034e
+ 288:	0000035a 	.word	0x0000035a
+ 28c:	00000374 	.word	0x00000374
+ 290:	00000377 	.word	0x00000377
+ 294:	0000037a 	.word	0x0000037a
+ 298:	0000037d 	.word	0x0000037d
+ 29c:	0000038c 	.word	0x0000038c
+ 2a0:	000003a8 	.word	0x000003a8
+ 2a4:	000003ab 	.word	0x000003ab
+ 2a8:	000003b9 	.word	0x000003b9
+ 2ac:	000003c0 	.word	0x000003c0
+ 2b0:	000003ca 	.word	0x000003ca
+ 2b4:	000003d2 	.word	0x000003d2
+ 2b8:	000003d3 	.word	0x000003d3
+ 2bc:	000003d5 	.word	0x000003d5
+ 2c0:	000003de 	.word	0x000003de
+ 2c4:	000003ea 	.word	0x000003ea
+ 2c8:	000003ef 	.word	0x000003ef
+
+000002cc <numbers>:
+ 2cc:	deadbeef 	.word	0xdeadbeef
+ 2d0:	deadbeef 	.word	0xdeadbeef
+ 2d4:	deadbeef 	.word	0xdeadbeef
+ 2d8:	deadbeef 	.word	0xdeadbeef
+ 2dc:	deadbeef 	.word	0xdeadbeef
+ 2e0:	deadbeef 	.word	0xdeadbeef
+ 2e4:	deadbeef 	.word	0xdeadbeef
+ 2e8:	deadbeef 	.word	0xdeadbeef
+ 2ec:	deadbeef 	.word	0xdeadbeef
+ 2f0:	deadbeef 	.word	0xdeadbeef
+ 2f4:	deadbeef 	.word	0xdeadbeef
+ 2f8:	deadbeef 	.word	0xdeadbeef
+ 2fc:	deadbeef 	.word	0xdeadbeef
+ 300:	deadbeef 	.word	0xdeadbeef
+ 304:	deadbeef 	.word	0xdeadbeef
+ 308:	deadbeef 	.word	0xdeadbeef
+ 30c:	deadbeef 	.word	0xdeadbeef
+ 310:	deadbeef 	.word	0xdeadbeef
+ 314:	deadbeef 	.word	0xdeadbeef
+ 318:	deadbeef 	.word	0xdeadbeef
+ 31c:	deadbeef 	.word	0xdeadbeef
+ 320:	deadbeef 	.word	0xdeadbeef
+ 324:	deadbeef 	.word	0xdeadbeef
+ 328:	deadbeef 	.word	0xdeadbeef
+ 32c:	deadbeef 	.word	0xdeadbeef
+ 330:	deadbeef 	.word	0xdeadbeef
+ 334:	deadbeef 	.word	0xdeadbeef
+ 338:	deadbeef 	.word	0xdeadbeef
+ 33c:	deadbeef 	.word	0xdeadbeef
+ 340:	deadbeef 	.word	0xdeadbeef
+ 344:	deadbeef 	.word	0xdeadbeef
+ 348:	deadbeef 	.word	0xdeadbeef
+ 34c:	deadbeef 	.word	0xdeadbeef
+ 350:	deadbeef 	.word	0xdeadbeef
+ 354:	deadbeef 	.word	0xdeadbeef
+ 358:	deadbeef 	.word	0xdeadbeef
+ 35c:	deadbeef 	.word	0xdeadbeef
+ 360:	deadbeef 	.word	0xdeadbeef
+ 364:	deadbeef 	.word	0xdeadbeef
+ 368:	deadbeef 	.word	0xdeadbeef
+ 36c:	deadbeef 	.word	0xdeadbeef
+ 370:	deadbeef 	.word	0xdeadbeef
+ 374:	deadbeef 	.word	0xdeadbeef
+ 378:	deadbeef 	.word	0xdeadbeef
+ 37c:	deadbeef 	.word	0xdeadbeef
+ 380:	deadbeef 	.word	0xdeadbeef
+ 384:	deadbeef 	.word	0xdeadbeef
+ 388:	deadbeef 	.word	0xdeadbeef
+ 38c:	deadbeef 	.word	0xdeadbeef
+ 390:	deadbeef 	.word	0xdeadbeef
+ 394:	deadbeef 	.word	0xdeadbeef
+ 398:	deadbeef 	.word	0xdeadbeef
+ 39c:	deadbeef 	.word	0xdeadbeef
+ 3a0:	deadbeef 	.word	0xdeadbeef
+ 3a4:	deadbeef 	.word	0xdeadbeef
+ 3a8:	deadbeef 	.word	0xdeadbeef
+ 3ac:	deadbeef 	.word	0xdeadbeef
+ 3b0:	deadbeef 	.word	0xdeadbeef
+ 3b4:	deadbeef 	.word	0xdeadbeef
+ 3b8:	deadbeef 	.word	0xdeadbeef
+ 3bc:	deadbeef 	.word	0xdeadbeef
+ 3c0:	deadbeef 	.word	0xdeadbeef
+ 3c4:	deadbeef 	.word	0xdeadbeef
+ 3c8:	deadbeef 	.word	0xdeadbeef
+ 3cc:	deadbeef 	.word	0xdeadbeef
+ 3d0:	deadbeef 	.word	0xdeadbeef
+ 3d4:	deadbeef 	.word	0xdeadbeef
+ 3d8:	deadbeef 	.word	0xdeadbeef
+ 3dc:	deadbeef 	.word	0xdeadbeef
+ 3e0:	deadbeef 	.word	0xdeadbeef
+ 3e4:	deadbeef 	.word	0xdeadbeef
+ 3e8:	deadbeef 	.word	0xdeadbeef
+ 3ec:	deadbeef 	.word	0xdeadbeef
+ 3f0:	deadbeef 	.word	0xdeadbeef
+ 3f4:	deadbeef 	.word	0xdeadbeef
+ 3f8:	deadbeef 	.word	0xdeadbeef
+ 3fc:	deadbeef 	.word	0xdeadbeef
+ 400:	deadbeef 	.word	0xdeadbeef
+ 404:	deadbeef 	.word	0xdeadbeef
+ 408:	deadbeef 	.word	0xdeadbeef
+ 40c:	deadbeef 	.word	0xdeadbeef
+ 410:	deadbeef 	.word	0xdeadbeef
+ 414:	deadbeef 	.word	0xdeadbeef
+ 418:	deadbeef 	.word	0xdeadbeef
+ 41c:	deadbeef 	.word	0xdeadbeef
+ 420:	deadbeef 	.word	0xdeadbeef
+ 424:	deadbeef 	.word	0xdeadbeef
+ 428:	deadbeef 	.word	0xdeadbeef
+ 42c:	deadbeef 	.word	0xdeadbeef
+ 430:	deadbeef 	.word	0xdeadbeef
+ 434:	deadbeef 	.word	0xdeadbeef
+ 438:	deadbeef 	.word	0xdeadbeef
+ 43c:	deadbeef 	.word	0xdeadbeef
+ 440:	deadbeef 	.word	0xdeadbeef
+ 444:	deadbeef 	.word	0xdeadbeef
+ 448:	deadbeef 	.word	0xdeadbeef
+ 44c:	deadbeef 	.word	0xdeadbeef
+ 450:	deadbeef 	.word	0xdeadbeef
+ 454:	deadbeef 	.word	0xdeadbeef
+ 458:	deadbeef 	.word	0xdeadbeef
+ 45c:	ff200040 	.word	0xff200040
+ 460:	ff200050 	.word	0xff200050
+ 464:	ff200000 	.word	0xff200000
+ 468:	0000013c 	.word	0x0000013c
+ 46c:	000002cc 	.word	0x000002cc
+ 470:	00000138 	.word	0x00000138
